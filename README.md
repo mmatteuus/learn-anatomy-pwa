@@ -1,109 +1,99 @@
-# JGAnatomia
+# JG Anatomia
 
-PWA educacional de anatomia humana construida com **Next.js (App Router)** e **Supabase**. O projeto entrega gameplay gamificado, ingestao de conteudo plugavel, telemetria de aprendizagem e modos de jogo cronometrados, sempre com foco em RLS, acessibilidade AA+ e suporte offline-first.
+PWA educacional gamificada para o estudo de anatomia humana. A aplicação combina trilhas de aprendizagem, questões interativas, acompanhamento de progresso e suporte offline.
 
-## Tecnologias principais
+## Destaques
 
-- Next.js 15 (App Router, rotas server/edge, Server Actions)
-- TypeScript + Tailwind CSS (tema high-contrast, modo daltonico, touch friendly)
-- TanStack Query + Zustand (estado global, progresso convidado persistido em localStorage)
-- Supabase (Auth, Postgres com RLS, Storage, Edge Functions)
-- PWA com `@ducanh2912/next-pwa` (manifest, service worker, fallback offline)
-- Playwright para E2E e lint/typecheck integrados em scripts npm
+- experiência liberada para visitantes na primeira fase;
+- autenticação e sincronização de progresso com Supabase;
+- módulos, níveis e modo Sprint cronometrado;
+- biblioteca para envio de PDFs, imagens e links de estudo;
+- funcionamento como PWA, com instalação e fallback offline;
+- interface responsiva, acessível e preparada para toque;
+- testes de fluxo com Playwright;
+- banco PostgreSQL protegido por Row Level Security.
 
-## Requisitos
+## Stack
 
-- Node.js 18+ e npm 10+
-- Supabase CLI (opcional para girar migracoes localmente) `npm install -g supabase`
-- Projeto Supabase configurado com ref `ivluxalvofzyqzzuonim`
+- Next.js 15 e App Router
+- TypeScript
+- Tailwind CSS
+- TanStack Query
+- Zustand
+- Supabase Auth, PostgreSQL, Storage e Edge Functions
+- Playwright
 
-## Configuracao
+## Executando localmente
 
-1. Copie `.env.example` para `.env.local` e preencha:
-   ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://ivluxalvofzyqzzuonim.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=<chave_anonima_publishable>
-   SUPABASE_SERVICE_ROLE_KEY=<apenas_no_backend_ou_edge>
-   NEXT_PUBLIC_SITE_URL=http://localhost:3000
-   ```
-   > **Importante:** a service role nunca deve ir para o bundle cliente.
+### Requisitos
 
-2. Instale dependencias:
-   ```bash
-   npm install
-   ```
+- Node.js 18+
+- npm 10+
+- projeto Supabase para autenticação e persistência
 
-3. Suba o servidor de desenvolvimento:
-   ```bash
-   npm run dev
-   ```
-   Acesse em [http://localhost:3000](http://localhost:3000).
+### Instalação
 
-## Migracoes e buckets
+```bash
+git clone https://github.com/mmatteuus/learn-anatomy-pwa.git
+cd learn-anatomy-pwa
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-- SQL completo (tabelas, RLS, seeds e politicas de Storage) em `supabase/migrations/20251009183000_init.sql`.
-  ```bash
-  supabase db reset --local    # recria schema local
-  supabase db push             # aplica em projeto remoto (usar com cautela)
-  ```
-- Edge function opcional `supabase/functions/signed-url/index.ts` gera URLs assinadas para `study-docs/<user>/<arquivo>`.
+Acesse `http://localhost:3000`.
 
-## Scripts npm
+## Variáveis de ambiente
 
-| Script              | Descricao                                                         |
-| ------------------- | ----------------------------------------------------------------- |
-| `npm run dev`       | Next em modo desenvolvimento                                      |
-| `npm run build`     | Build de producao + service worker                                |
-| `npm run start`     | Servidor Next de producao                                         |
-| `npm run lint`      | ESLint (usar `lint:fix` para corrigir automaticamente)            |
-| `npm run typecheck` | TypeScript sem emissao de artefatos                               |
-| `npm run test:e2e`  | Playwright (requer app rodando; configure `PLAYWRIGHT_BASE_URL`)  |
-| `npm run test:e2e:headed` | Playwright em modo interativo                            |
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+A chave `SUPABASE_SERVICE_ROLE_KEY` deve ser utilizada exclusivamente no servidor.
+
+## Qualidade
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run test:e2e
+```
+
+## Arquitetura resumida
+
+```text
+src/app/                 rotas e páginas
+src/components/          componentes e experiência de jogo
+src/components/providers sincronização e providers globais
+src/stores/              estado e progresso local
+supabase/migrations/     schema, políticas RLS e dados iniciais
+supabase/functions/      funções executadas no backend
+ tests/                  cenários E2E
+```
 
 ## Funcionalidades implementadas
 
-- **Autenticacao Supabase** com fluxo email/senha, pagina de sign-in/sign-up, confirmacao (`/auth/confirm`) e header responsivo com login/logout.
-- **Gate das fases**: `/play/module/[slug]/level/[idx]` bloqueia fases acima da demo quando nao autenticado e direciona para `/auth/sign-in`.
-- **Gameplay demo (Level 1)**: motor MCQ com feedback, slider de confianca, explicacao, persistencia de progresso convidado via Zustand + localStorage, telemetria em `attempts` e merge automatico com `user_progress` apos login.
-- **Modo Sprint** (`/modes/sprint`): loop de 90s com score por streak, cronometro, grava tentativas em `attempts`, resume final e controle de pausa.
-- **/content hub**: upload de PDFs/IMGs para `study-docs/<user>/...`, cadastro de URLs, listagem com notas/visibilidade, geracao de Signed URL via API (`/api/storage/signed-url`) e acionamento de ingestao (`/api/ingest`) para pipeline futura.
-- **PWA completo**: manifest, icons, offline fallback (`/offline`), estrategia de cache (stale-while-revalidate + runtime caching Supabase).
-- **Acessibilidade**: tema high-contrast, modos daltônicos, skip link, foco visivel, componentes >= 44px.
+- cadastro, login, confirmação e encerramento de sessão;
+- bloqueio de fases avançadas para visitantes;
+- quiz com feedback, explicações e nível de confiança;
+- persistência local e sincronização após autenticação;
+- telemetria de tentativas e progresso;
+- modo Sprint com pontuação, sequência e cronômetro;
+- upload seguro e URLs assinadas para conteúdos de estudo;
+- service worker, manifest e estratégia de cache;
+- alto contraste, suporte a daltonismo, foco visível e alvos de toque acessíveis.
 
-## Testes E2E
+## Próximas evoluções
 
-Playwright configurado em `playwright.config.ts`. O teste `tests/login-gate.spec.ts` valida (quando executado com app em execucao) o redirecionamento de fases bloqueadas e o acesso livre da demo.
-
-Para rodar:
-
-```bash
-PLAYWRIGHT_BASE_URL=http://localhost:3000 npm run test:e2e
-```
-
-## Fluxos Supabase
-
-- **ProgressSyncer** (`src/components/providers/progress-syncer.tsx`): merge da cache local (`useProgressStore`) em `user_progress` e `attempts` quando o usuario realiza login.
-- **Signed URL**: rota Next (`/api/storage/signed-url`) usa `getServerSupabaseClient` para validar o usuario e `getServiceRoleSupabaseClient` para gerar URL com expiração de 1h. Edge function equivalente inclui scaffolding Deno.
-- **Ingest placeholder**: `/api/ingest` retorna `202` simulando enfileiramento; substitua por fila/Edge function real quando o extrator de PDF/URL estiver pronto.
-
-## Estrutura de rotas
-
-- `/` Hub com CTAs, cards de modos e login CTA.
-- `/play` Lista modulos/levels com indicacao de bloqueio ou acesso livre.
-- `/play/module/[slug]/level/[idx]` Gameplay server -> client `QuizEngine`.
-- `/play/demo` Demo liberada para convidados.
-- `/modes/sprint` Sprint cronometro (MCQ embaralhado).
-- `/content` Biblioteca segura (upload, link, ingest).
-- `/auth/*` Fluxos de login, signup e confirmacao.
-- `/offline` Fallback para PWA.
-
-## TODO sugerido
-
-- Implementar renderers interativos para itens `hotspot` e `label`.
-- Conectar `/api/ingest` a pipeline real (PDF/vision) e gerar novos `quiz_items`.
-- Acrescentar leaderboard global (`/rankings`) e modo OSCE/SRS.
-- Automatizar Lighthouse PWA/A11y (>= 90) em CI.
+- questões interativas do tipo hotspot e identificação por imagem;
+- pipeline de geração de questões a partir de conteúdos enviados;
+- ranking, revisão espaçada e novos modos de jogo;
+- automação de métricas Lighthouse em CI.
 
 ---
 
-Projeto higienizado sem referencias a outras IAs, com estrutura modular (providers, stores, gameplay), politicas RLS idempotentes e buckets configurados conforme as diretrizes. Se precisar publicar, ajuste `NEXT_PUBLIC_SITE_URL` e configure Netlify/Vercel com as variaveis descritas acima.
+Projeto de portfólio desenvolvido por Mateus Ferreira Lopes.
